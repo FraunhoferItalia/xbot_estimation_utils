@@ -33,6 +33,14 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
 
     _zero4d.setZero(4);
 
+    Eigen::MatrixXd P0;
+    P0.setIdentity(4, 4);
+
+    if(!_kalman.initialize(_zero4d, P0))
+    {
+        throw std::runtime_error("kalman init failed");
+    }
+
 }
 
 bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
@@ -57,14 +65,16 @@ bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
     _Y.bottomRightCorner<3, 3>() = -Sg*R;
 
     // form measurment equation
-    // J'Yx = g(q) - tau
+    // C*x = J'Y*x = g(q) - tau
+    _model->computeGravityCompensation(_grav);
+    _model->getJointEffort(_tau);
     _C.noalias() = _J.transpose()*_Y;
     _r = _grav - _tau;
 
     // kalman
     _kalman.predict(_A, _zero4d, _Q);
     payload_params = _kalman.correct(_r, _C, _R);
-    payload_torque.noalias() = _C*payload_params;
+    payload_torque.noalias() = -_C*payload_params;
 
     return true;
 }

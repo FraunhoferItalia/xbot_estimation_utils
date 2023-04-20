@@ -1,4 +1,5 @@
 #include <estimation_utils/kalman/kalman.h>
+#include <iostream>
 
 using namespace estimation_utils;
 
@@ -10,7 +11,8 @@ KalmanFilter::KalmanFilter(int _nx):
 
 bool KalmanFilter::initialize(const Eigen::VectorXd &x0, const Eigen::MatrixXd &P0)
 {
-    if(_xhat.size() != nx)
+
+    if(x0.size() != nx)
     {
         return false;
     }
