@@ -42,7 +42,8 @@ const Eigen::VectorXd &KalmanFilter::predict(const Eigen::MatrixXd &A,
     return _xhat;
 }
 
-const Eigen::VectorXd &KalmanFilter::correct(const Eigen::VectorXd &y, const Eigen::MatrixXd &C, const Eigen::MatrixXd &R)
+const Eigen::VectorXd &KalmanFilter::correct(const Eigen::VectorXd &y,
+                                             const Eigen::MatrixXd &C, const Eigen::MatrixXd &R)
 {
     // compute innovation covariance S
     _Stmp.noalias() = C*_P;
@@ -51,7 +52,7 @@ const Eigen::VectorXd &KalmanFilter::correct(const Eigen::VectorXd &y, const Eig
     // cholesky of S
     _llt.compute(_S);
 
-    // solve S*K = C*P -> K = P*C'*Sinv
+    // solve S*K' = C*P -> K = P*C'*Sinv
     _K.noalias() = C*_P;
     _llt.solveInPlace(_K);
     _K.transposeInPlace();
@@ -61,8 +62,9 @@ const Eigen::VectorXd &KalmanFilter::correct(const Eigen::VectorXd &y, const Eig
 
     // correction
     _xhat.noalias() += _K * _e;
-    _Ptmp = (_I - _K*C)*_P;
-    _P = 0.5*(_Ptmp + _Ptmp.transpose());
+    _Ptmp.noalias() = (_I - _K*C);
+    _Ptmp1.noalias() = _Ptmp * _P;
+    _P = 0.5*(_Ptmp1 + _Ptmp1.transpose());
 
     return _xhat;
 }

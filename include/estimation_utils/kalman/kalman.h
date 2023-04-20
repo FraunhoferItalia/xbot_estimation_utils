@@ -38,7 +38,7 @@ private:
     Eigen::MatrixXd _P, _S, _K, _I;
 
     Eigen::VectorXd _xtmp;
-    Eigen::MatrixXd _Ptmp, _Ktmp, _Stmp;
+    Eigen::MatrixXd _Ptmp, _Ptmp1, _Ktmp, _Stmp;
 
     Eigen::LLT<Eigen::MatrixXd> _llt;
 
