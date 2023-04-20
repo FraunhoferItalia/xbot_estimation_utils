@@ -68,3 +68,8 @@ bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
 
     return true;
 }
+
+Eigen::Matrix4d PayloadEstimation::getCovariance() const
+{
+    return _kalman.P();
+}

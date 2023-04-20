@@ -28,6 +28,10 @@ public:
                                    const Eigen::MatrixXd& C,
                                    const Eigen::MatrixXd& R);
 
+    const Eigen::MatrixXd& P() const;
+
+    const Eigen::VectorXd& xhat() const;
+
 private:
 
     Eigen::VectorXd _xhat, _e;

@@ -23,6 +23,8 @@ public:
     bool compute(Eigen::VectorXd& payload_torque,
                  Eigen::Vector4d& payload_params);
 
+    Eigen::Matrix4d getCovariance() const;
+
 
 private:
 

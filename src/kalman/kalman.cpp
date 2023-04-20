@@ -64,3 +64,13 @@ const Eigen::VectorXd &KalmanFilter::correct(const Eigen::VectorXd &y, const Eig
 
     return _xhat;
 }
+
+const Eigen::MatrixXd &KalmanFilter::P() const
+{
+    return _P;
+}
+
+const Eigen::VectorXd &KalmanFilter::xhat() const
+{
+    return _xhat;
+}
