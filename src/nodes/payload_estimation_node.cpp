@@ -9,21 +9,26 @@
 
 int main(int argc, char **argv)
 {
-    // init ros, get handles
+    // init ros, get handles, advertise logging topics
     ros::init(argc, argv, "payload_estimation_node");
     ros::NodeHandle nh_priv("~");
 
     ros::Publisher payload_torque_pub = nh_priv.advertise<std_msgs::Float64MultiArray>("payload_torque", 1);
     ros::Publisher payload_params_pub = nh_priv.advertise<std_msgs::Float64MultiArray>("payload_params", 1);
     
-    // get robot, model, and one imu
+    // get robot, model
     auto robot = XBot::RobotInterface::getRobot(XBot::ConfigOptionsFromParamServer());
     auto model = XBot::ModelInterface::getModel(XBot::ConfigOptionsFromParamServer());
 
+    // parameters from ros
     double dt = nh_priv.param("rate", 0.01);
+
     double torque_noise = nh_priv.param("torque_noise", 1.0);
+
     double mass_rate = nh_priv.param("mass_rate", 0.01);
+
     double com_rate = nh_priv.param("com_rate", 0.01);
+
     std::string payload_link;
     if(!nh_priv.getParam("payload_link", payload_link))
     {
@@ -31,6 +36,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    // construct estimator
     estimation_utils::PayloadEstimation payload_estimator(
         model, 
         payload_link, 
@@ -39,6 +45,7 @@ int main(int argc, char **argv)
         std::pow(com_rate*dt, 2.)
     );
 
+    // start loop
     ros::Rate rate(1./dt);
 
     Eigen::VectorXd payload_torque;
@@ -46,12 +53,15 @@ int main(int argc, char **argv)
 
     while(ros::ok())
     {
+        // sense state, update model
         robot->sense(false);
         model->syncFrom(*robot, XBot::Sync::All, XBot::Sync::MotorSide);
         model->update();
 
+        // do estimation
         payload_estimator.compute_static(payload_torque, payload_params);
 
+        // publish results
         std_msgs::Float64MultiArray msg;
         
         tf::matrixEigenToMsg(payload_torque, msg);
@@ -60,6 +70,7 @@ int main(int argc, char **argv)
         tf::matrixEigenToMsg(payload_params, msg);
         payload_params_pub.publish(msg);
 
+        // sync loop
         rate.sleep();
 
     }
