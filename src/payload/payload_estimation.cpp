@@ -43,7 +43,8 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
 
 }
 
-bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
+bool PayloadEstimation::compute(const Eigen::VectorXd &residual,
+                                Eigen::VectorXd &payload_torque,
                                 Eigen::Vector4d &payload_params)
 {
     // gravity
@@ -65,11 +66,9 @@ bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
     _Y.bottomRightCorner<3, 3>() = -Sg*R;
 
     // form measurment equation
-    // C*x = J'Y*x = g(q) - tau
-    _model->computeGravityCompensation(_grav);
-    _model->getJointEffort(_tau);
+    // C*x = J'Y*x = r
     _C.noalias() = _J.transpose()*_Y;
-    _r = _grav - _tau;
+    _r = residual;
 
     // kalman
     _kalman.predict(_A, _zero4d, _Q);
@@ -77,6 +76,14 @@ bool PayloadEstimation::compute(Eigen::VectorXd &payload_torque,
     payload_torque.noalias() = -_C*payload_params;
 
     return true;
+}
+
+bool PayloadEstimation::compute_static(Eigen::VectorXd &payload_torque,
+                                       Eigen::Vector4d &payload_params)
+{
+    _r = _grav - _tau;
+
+    return compute(_r, payload_torque, payload_params);
 }
 
 Eigen::Matrix4d PayloadEstimation::getCovariance() const

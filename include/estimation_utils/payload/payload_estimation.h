@@ -20,8 +20,12 @@ public:
                       double mass_noise_cov,
                       double com_noise_cov);
 
-    bool compute(Eigen::VectorXd& payload_torque,
+    bool compute(const Eigen::VectorXd& residual,
+                 Eigen::VectorXd& payload_torque,
                  Eigen::Vector4d& payload_params);
+
+    bool compute_static(Eigen::VectorXd& payload_torque,
+                        Eigen::Vector4d& payload_params);
 
     Eigen::Matrix4d getCovariance() const;
 

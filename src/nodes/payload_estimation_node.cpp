@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         model->syncFrom(*robot, XBot::Sync::All, XBot::Sync::MotorSide);
         model->update();
 
-        payload_estimator.compute(payload_torque, payload_params);
+        payload_estimator.compute_static(payload_torque, payload_params);
 
         std_msgs::Float64MultiArray msg;
         
