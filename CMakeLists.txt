@@ -7,6 +7,8 @@ add_subdirectory(src/kalman)
 
 add_subdirectory(src/payload)
 
+add_subdirectory(src/nodes)
+
 install(DIRECTORY include/${PROJECT_NAME}
         DESTINATION include/${PROJECT_NAME}
         FILES_MATCHING PATTERN *.h)
