@@ -33,19 +33,29 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
 
     _zero4d.setZero(4);
 
-    Eigen::MatrixXd P0;
-    P0.setIdentity(4, 4);
-
-    if(!_kalman.initialize(_zero4d, P0))
+    if(!initialize(_zero4d, 1.0, 1.0))
     {
         throw std::runtime_error("kalman init failed");
     }
 
 }
 
-bool PayloadEstimation::compute(const Eigen::VectorXd &residual,
-                                Eigen::VectorXd &payload_torque,
-                                Eigen::Vector4d &payload_params)
+bool PayloadEstimation::initialize(const Eigen::Vector4d& x0,
+                                   double mass_cov, double com_cov)
+{
+    Eigen::MatrixXd P0;
+    P0.setIdentity(4, 4);
+    P0.diagonal() << mass_cov, mass_cov*com_cov, mass_cov*com_cov, mass_cov*com_cov;
+
+    if(!_kalman.initialize(x0, P0))
+    {
+        return false; 
+    }
+
+    return true;
+}
+
+void PayloadEstimation::compute_meas_matrix()
 {
     // gravity
     Eigen::Vector3d g(0, 0, -9.81);
@@ -68,6 +78,15 @@ bool PayloadEstimation::compute(const Eigen::VectorXd &residual,
     // form measurment equation
     // C*x = J'Y*x = r
     _C.noalias() = _J.transpose()*_Y;
+
+}
+
+bool PayloadEstimation::compute(const Eigen::VectorXd &residual,
+                                Eigen::VectorXd &payload_torque,
+                                Eigen::Vector4d &payload_params)
+{
+    // compute _C
+    compute_meas_matrix();
     _r = residual;
 
     // kalman
@@ -81,9 +100,21 @@ bool PayloadEstimation::compute(const Eigen::VectorXd &residual,
 bool PayloadEstimation::compute_static(Eigen::VectorXd &payload_torque,
                                        Eigen::Vector4d &payload_params)
 {
+    _model->computeGravityCompensation(_grav);
+    _model->getJointEffort(_tau);
     _r = _grav - _tau;
 
     return compute(_r, payload_torque, payload_params);
+}
+
+void PayloadEstimation::compute_payload_torque(const Eigen::Vector4d& payload_params, 
+                            Eigen::VectorXd& payload_torque)
+{
+    // compute _C
+    compute_meas_matrix();
+
+    // compute torque
+    payload_torque.noalias() = -_C*payload_params;
 }
 
 Eigen::Matrix4d PayloadEstimation::getCovariance() const

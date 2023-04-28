@@ -20,6 +20,9 @@ public:
                       double mass_noise_cov,
                       double com_noise_cov);
 
+    bool initialize(const Eigen::Vector4d& x0,
+                    double mass_cov, double com_cov);
+
     bool compute(const Eigen::VectorXd& residual,
                  Eigen::VectorXd& payload_torque,
                  Eigen::Vector4d& payload_params);
@@ -27,10 +30,15 @@ public:
     bool compute_static(Eigen::VectorXd& payload_torque,
                         Eigen::Vector4d& payload_params);
 
+    void compute_payload_torque(const Eigen::Vector4d& payload_params, 
+                                Eigen::VectorXd& payload_torque);
+
     Eigen::Matrix4d getCovariance() const;
 
 
 private:
+
+    void compute_meas_matrix();
 
     XBot::ModelInterface::ConstPtr _model;
     KalmanFilter _kalman;
