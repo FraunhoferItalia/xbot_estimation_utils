@@ -8,7 +8,8 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
                                      std::string payload_link,
                                      double torque_noise_cov,
                                      double mass_noise_cov,
-                                     double com_noise_cov):
+                                     double com_noise_cov,
+                                     double rate):
     _model(model),
     _kalman(4),
     _payload_link(payload_link)
@@ -32,6 +33,8 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
     {
         throw std::runtime_error("kalman init failed");
     }
+
+    _force_estimation = std::make_unique<ForceEstimationMomentumBased>(model, rate);
 
 }
 
@@ -124,6 +127,20 @@ bool PayloadEstimation::compute_static(Eigen::VectorXd &payload_torque,
     _model->computeGravityCompensation(_grav);
     _model->getJointEffort(_tau);
     _r = _grav - _tau;
+
+    if(_model->isFloatingBase())
+    {
+        _r.head<6>().setZero();
+    }
+
+    return compute(_r, payload_torque, payload_params);
+}
+
+bool PayloadEstimation::compute_momentum_based(Eigen::VectorXd &payload_torque,
+                                       Eigen::Vector4d &payload_params)
+{
+    _force_estimation->update();
+    _force_estimation->getResiduals(_r);
 
     if(_model->isFloatingBase())
     {

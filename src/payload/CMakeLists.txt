@@ -1,7 +1,9 @@
 find_package(XBotInterface REQUIRED)
+find_package(matlogger2 REQUIRED)
 
 add_library(payload_estimation SHARED
-    payload_estimation.cpp)
+    payload_estimation.cpp
+    ForceEstimation.cpp)
 
 set_target_properties(payload_estimation PROPERTIES PREFIX "${PROJECT_NAME}_")
 
@@ -10,6 +12,7 @@ target_link_libraries(payload_estimation
     kalman
     Eigen3::Eigen
     XBotInterface::XBotInterface
+    matlogger2::matlogger2
 )
 
 target_include_directories(payload_estimation

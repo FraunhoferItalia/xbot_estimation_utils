@@ -42,7 +42,8 @@ int main(int argc, char **argv)
         payload_link, 
         std::pow(torque_noise*dt, 2.), 
         std::pow(mass_rate*dt, 2.), 
-        std::pow(com_rate*dt, 2.)
+        std::pow(com_rate*dt, 2.),
+        1.0/dt
     );
 
     // start loop

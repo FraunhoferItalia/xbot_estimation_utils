@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <XBotInterface/ModelInterface.h>
+#include <estimation_utils/payload/ForceEstimation.h>
 
 #include "../kalman/kalman.h"
 
@@ -18,7 +19,8 @@ public:
                       std::string payload_link,
                       double torque_noise_cov,
                       double mass_noise_cov,
-                      double com_noise_cov);
+                      double com_noise_cov,
+                      double rate);
 
     bool set_noise_covariance(double torque_noise_cov);
 
@@ -33,6 +35,9 @@ public:
                  Eigen::Vector4d& payload_params);
 
     bool compute_static(Eigen::VectorXd& payload_torque,
+                        Eigen::Vector4d& payload_params);
+
+    bool compute_momentum_based(Eigen::VectorXd& payload_torque,
                         Eigen::Vector4d& payload_params);
 
     void compute_payload_torque(const Eigen::Vector4d& payload_params,
@@ -57,6 +62,8 @@ private:
     Eigen::MatrixXd _J, _C, _Q, _R, _A, _Y;
     Eigen::VectorXd _r, _tau, _grav;
     Eigen::VectorXd _zero4d;
+
+    std::unique_ptr<estimation_utils::ForceEstimationMomentumBased> _force_estimation;
 
 };
 
