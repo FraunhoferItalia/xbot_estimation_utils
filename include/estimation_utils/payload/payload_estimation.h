@@ -20,6 +20,11 @@ public:
                       double mass_noise_cov,
                       double com_noise_cov);
 
+    bool set_noise_covariance(double torque_noise_cov);
+
+    bool set_state_covariance(double mass_noise_cov,
+                              double com_noise_cov);
+
     bool initialize(const Eigen::Vector4d& x0,
                     double mass_cov, double com_cov);
 
@@ -30,8 +35,13 @@ public:
     bool compute_static(Eigen::VectorXd& payload_torque,
                         Eigen::Vector4d& payload_params);
 
-    void compute_payload_torque(const Eigen::Vector4d& payload_params, 
+    void compute_payload_torque(const Eigen::Vector4d& payload_params,
                                 Eigen::VectorXd& payload_torque);
+
+    void compute_payload_torque(const Eigen::Vector4d& payload_params,
+                                const Eigen::Matrix4d& payload_covariance,
+                                Eigen::VectorXd& payload_torque,
+                                Eigen::MatrixXd& payload_torque_covariance);
 
     Eigen::Matrix4d getCovariance() const;
 

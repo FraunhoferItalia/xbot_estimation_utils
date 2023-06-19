@@ -13,14 +13,9 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
     _kalman(4),
     _payload_link(payload_link)
 {
-    _R = Eigen::VectorXd::Constant(model->getJointNum(),
-                                   torque_noise_cov).asDiagonal();
+    set_state_covariance(mass_noise_cov, com_noise_cov);
 
-    _Q = Eigen::Vector4d(
-                mass_noise_cov,
-                mass_noise_cov*com_noise_cov,
-                mass_noise_cov*com_noise_cov,
-                mass_noise_cov*com_noise_cov).asDiagonal();
+    set_noise_covariance(torque_noise_cov);
 
     _A.setIdentity(4, 4);
 
@@ -38,6 +33,25 @@ PayloadEstimation::PayloadEstimation(XBot::ModelInterface::ConstPtr model,
         throw std::runtime_error("kalman init failed");
     }
 
+}
+
+bool PayloadEstimation::set_noise_covariance(double torque_noise_cov)
+{
+    _R = Eigen::VectorXd::Constant(_model->getJointNum(),
+                                   torque_noise_cov).asDiagonal();
+
+    return true;  // TODO check input
+}
+
+bool PayloadEstimation::set_state_covariance(double mass_noise_cov, double com_noise_cov)
+{
+    _Q = Eigen::Vector4d(
+             mass_noise_cov,
+             mass_noise_cov*com_noise_cov,
+             mass_noise_cov*com_noise_cov,
+             mass_noise_cov*com_noise_cov).asDiagonal();
+
+    return true;  // TODO check input
 }
 
 bool PayloadEstimation::initialize(const Eigen::Vector4d& x0,
@@ -69,6 +83,13 @@ void PayloadEstimation::compute_meas_matrix()
 
     // payload jacobian
     _model->getJacobian(_payload_link, _J);
+
+    // don't use virtual joints on floating base models
+    // (it breakes the estimate)
+    if(_model->isFloatingBase())
+    {
+        _J.leftCols<6>().setZero();
+    }
 
     // payload param -> wrench matrix
     // F = Y*x
@@ -104,6 +125,11 @@ bool PayloadEstimation::compute_static(Eigen::VectorXd &payload_torque,
     _model->getJointEffort(_tau);
     _r = _grav - _tau;
 
+    if(_model->isFloatingBase())
+    {
+        _r.head<6>().setZero();
+    }
+
     return compute(_r, payload_torque, payload_params);
 }
 
@@ -115,6 +141,16 @@ void PayloadEstimation::compute_payload_torque(const Eigen::Vector4d& payload_pa
 
     // compute torque
     payload_torque.noalias() = -_C*payload_params;
+}
+
+void PayloadEstimation::compute_payload_torque(const Eigen::Vector4d &payload_params,
+                                               const Eigen::Matrix4d &payload_covariance,
+                                               Eigen::VectorXd &payload_torque,
+                                               Eigen::MatrixXd &payload_torque_covariance)
+{
+    compute_payload_torque(payload_params, payload_torque);
+
+    payload_torque_covariance = _C * payload_covariance * _C.transpose();
 }
 
 Eigen::Matrix4d PayloadEstimation::getCovariance() const
