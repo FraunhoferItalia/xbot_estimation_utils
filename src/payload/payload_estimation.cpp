@@ -139,8 +139,7 @@ bool PayloadEstimation::compute_static(Eigen::VectorXd &payload_torque,
 bool PayloadEstimation::compute_momentum_based(Eigen::VectorXd &payload_torque,
                                        Eigen::Vector4d &payload_params)
 {
-    _force_estimation->update();
-    _force_estimation->getResiduals(_r);
+    _force_estimation->compute_residual(_r);
 
     if(_model->isFloatingBase())
     {

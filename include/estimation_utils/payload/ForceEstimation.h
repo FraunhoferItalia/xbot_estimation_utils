@@ -52,6 +52,8 @@ public:
 
     void log(XBot::MatLogger2::Ptr logger) const;
 
+    virtual void compute_residual(Eigen::VectorXd& res);
+
 protected:
 
     XBot::ModelInterface::ConstPtr _model;
@@ -60,7 +62,6 @@ private:
 
     void compute_A_b();
     void solve();
-    virtual void compute_residual(Eigen::VectorXd& res);
 
     struct TaskInfo
     {
@@ -104,9 +105,11 @@ public:
 
     bool getResiduals(Eigen::VectorXd &res) const;
 
+    void compute_residual(Eigen::VectorXd& res) override;
+
 private:
 
-    void compute_residual(Eigen::VectorXd& res) override;
+
     void init_momentum_obs();
 
     double _rate, _k_obs;
