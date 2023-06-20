@@ -131,18 +131,8 @@ void ForceEstimation::compute_A_b()
 
 void ForceEstimation::solve()
 {
-    compute_A_b();
-
-    if(_b.size() == 0)
-    {
-        return;
-    }
-
     _svd.compute(_A, Eigen::ComputeThinU|Eigen::ComputeThinV);
     _sol = _svd.solve(_b);
-
-//    _qr.compute(_A);
-//    _sol = _qr.solve(_b);
 }
 
 void ForceEstimation::compute_residual(Eigen::VectorXd& res)
@@ -158,6 +148,11 @@ void ForceEstimation::compute_residual(Eigen::VectorXd& res)
 void ForceEstimation::update()
 {
     compute_A_b();
+
+    if(_b.size() == 0)
+    {
+        return;
+    }
     
     solve();
     
