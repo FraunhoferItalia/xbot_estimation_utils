@@ -179,6 +179,12 @@ void ForceEstimation::update()
     }
 }
 
+bool ForceEstimation::getResiduals(Eigen::VectorXd& res) const
+{
+    res = _y;
+    return true;
+}
+
 void estimation_utils::ForceEstimation::log(XBot::MatLogger2::Ptr logger) const
 {
     for(const TaskInfo& t : _tasks)
@@ -211,12 +217,6 @@ ForceEstimationMomentumBased::ForceEstimationMomentumBased(XBot::ModelInterface:
     _rate(rate)
 {
     init_momentum_obs();
-}
-
-bool ForceEstimationMomentumBased::getResiduals(Eigen::VectorXd& res) const
-{
-    res = _y;
-    return true;
 }
 
 void ForceEstimationMomentumBased::compute_residual(Eigen::VectorXd& res)

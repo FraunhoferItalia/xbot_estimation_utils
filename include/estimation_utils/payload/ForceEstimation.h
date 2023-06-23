@@ -54,6 +54,8 @@ public:
 
     virtual void compute_residual(Eigen::VectorXd& res);
 
+    bool getResiduals(Eigen::VectorXd &res) const;
+
 protected:
 
     XBot::ModelInterface::ConstPtr _model;
@@ -102,8 +104,6 @@ public:
                                  double rate = DEFAULT_RATE,
                                  double svd_threshold = DEFAULT_SVD_THRESHOLD,
                                  double obs_bw = DEFAULT_OBS_BW);
-
-    bool getResiduals(Eigen::VectorXd &res) const;
 
     void compute_residual(Eigen::VectorXd& res) override;
 
