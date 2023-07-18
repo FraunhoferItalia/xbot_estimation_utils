@@ -8,7 +8,7 @@ target_link_libraries(kalman
 
 target_include_directories(kalman
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${ESTIMATION_UTILS_SRC_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 

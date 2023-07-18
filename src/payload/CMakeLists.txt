@@ -17,7 +17,7 @@ target_link_libraries(payload_estimation
 
 target_include_directories(payload_estimation
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${ESTIMATION_UTILS_SRC_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
