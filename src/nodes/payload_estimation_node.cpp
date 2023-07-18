@@ -29,6 +29,8 @@ int main(int argc, char **argv)
 
     double com_rate = nh_priv.param("com_rate", 0.01);
 
+    bool use_mobs = nh_priv.param("use_momentum_observer", false);
+
     std::string payload_link;
     if(!nh_priv.getParam("payload_link", payload_link))
     {
@@ -42,7 +44,8 @@ int main(int argc, char **argv)
         payload_link, 
         std::pow(torque_noise*dt, 2.), 
         std::pow(mass_rate*dt, 2.), 
-        std::pow(com_rate*dt, 2.)
+        std::pow(com_rate*dt, 2.),
+        1.0/dt
     );
 
     // start loop
@@ -59,7 +62,14 @@ int main(int argc, char **argv)
         model->update();
 
         // do estimation
-        payload_estimator.compute_static(payload_torque, payload_params);
+        if(use_mobs)
+        {
+            payload_estimator.compute_momentum_based(payload_torque, payload_params);
+        }
+        else
+        {
+            payload_estimator.compute_static(payload_torque, payload_params);
+        }
 
         // publish results
         std_msgs::Float64MultiArray msg;
