@@ -155,7 +155,7 @@ void ForceEstimation::update()
     }
     
     solve();
-    
+
     int dof_idx = 0;
     for(TaskInfo& t : _tasks)
     {
@@ -237,6 +237,7 @@ void ForceEstimationMomentumBased::compute_residual(Eigen::VectorXd& res)
     _p2 += (_tau + (_Mdot * _qdot - _coriolis) - _g + _y) / _rate;
 
     _y = _k_obs*(_p1 - _p2 - _p0);
+    res = _y;
       
     getResiduals(res);
     
