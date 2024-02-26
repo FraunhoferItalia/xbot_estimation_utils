@@ -141,7 +141,10 @@ void ForceEstimation::compute_residual(Eigen::VectorXd& res)
     _model->computeGravityCompensation(_g);
 
     res = _g - _tau;
-
+    if (_model->isFloatingBase())
+    {
+        res.head(6).setZero();
+    }
 }
 
 
@@ -238,6 +241,10 @@ void ForceEstimationMomentumBased::compute_residual(Eigen::VectorXd& res)
 
     _y = _k_obs*(_p1 - _p2 - _p0);
     res = _y;
+    if (_model->isFloatingBase())
+    {
+        res.head(6).setZero();
+    }
       
     getResiduals(res);
     
