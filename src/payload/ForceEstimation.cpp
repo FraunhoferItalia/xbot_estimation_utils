@@ -5,9 +5,11 @@ using namespace estimation_utils;
 const double ForceEstimation::DEFAULT_SVD_THRESHOLD = 0.05;
 
 ForceEstimation::ForceEstimation(XBot::ModelInterface::ConstPtr model, 
-                                 double svd_threshold):
+                                 double svd_threshold,
+                                 bool include_coriolis):
     _model(model),
-    _ndofs(0)
+    _ndofs(0),
+    _include_coriolis(_include_coriolis)
 {
     _svd.setThreshold(svd_threshold);
 }
@@ -138,7 +140,14 @@ void ForceEstimation::solve()
 void ForceEstimation::compute_residual(Eigen::VectorXd& res)
 {
     _model->getJointEffort(_tau);
-    _model->computeGravityCompensation(_g);
+    if (_include_coriolis)
+    {
+        _model->computeNonlinearTerm(_g);
+    }
+    else
+    {
+        _model->computeGravityCompensation(_g);
+    }
 
     res = _g - _tau;
     if (_model->isFloatingBase())

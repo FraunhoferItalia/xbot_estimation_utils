@@ -23,9 +23,11 @@ public:
      * @param model: shared pointer to ModelInterface; client code must keep this model up to date
      * with respect to the robot state
      * @param svd_threshold: threshold for solution regularization (close to singularities)
+     * @param include_coriolis: allow to specify if coriolis torques has to be considered for residual computation
      */
     ForceEstimation(XBot::ModelInterface::ConstPtr model,
-                    double svd_threshold = DEFAULT_SVD_THRESHOLD);
+                    double svd_threshold = DEFAULT_SVD_THRESHOLD,
+                    bool include_coriolis = false);
 
     /**
     * @brief The add_link method adds one link to the list of estimated forces.
@@ -87,6 +89,7 @@ private:
 
     Eigen::JacobiSVD<Eigen::MatrixXd> _svd;
     Eigen::ColPivHouseholderQR<Eigen::MatrixXd> _qr;
+    bool _include_coriolis;
 
 };
 
